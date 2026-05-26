@@ -1,0 +1,133 @@
+{
+  "entities": [
+    {
+      "type": "HARDWARE",
+      "label": "硬件平台",
+      "description": "芯片、开发板、处理器等硬件设备，如 RK3588、Orange Pi 5 Plus"
+    },
+    {
+      "type": "SOFTWARE",
+      "label": "软件工具",
+      "description": "应用程序、框架、库、工具链等，如 llama.cpp、rknn-toolkit2、LangChain"
+    },
+    {
+      "type": "MODEL",
+      "label": "模型",
+      "description": "AI/ML 模型，如 Qwen3.5-2B、gemma-4-e2b-it、MobileNet-V2、ResNet-50"
+    },
+    {
+      "type": "CONCEPT",
+      "label": "概念",
+      "description": "技术概念、理论、方法、架构模式等，如知识图谱、RAG、事件驱动架构、量化"
+    },
+    {
+      "type": "ORGANIZATION",
+      "label": "组织",
+      "description": "公司、机构、开源社区等，如 Anthropic、Google、Rockchip、Microsoft"
+    },
+    {
+      "type": "PROBLEM",
+      "label": "问题",
+      "description": "技术故障、编译错误、配置问题等，如类型不匹配、BLAS 路径问题、NPU 代理缺失"
+    },
+    {
+      "type": "SOLUTION",
+      "label": "解决方案",
+      "description": "修复方法、配置方案、工作流等，如手动修复 BLAS 路径、禁用 BLAS 编译"
+    },
+    {
+      "type": "CONFIG",
+      "label": "配置参数",
+      "description": "环境变量、编译选项、运行时参数等，如 GGML_BLAS、OMP_NUM_THREADS、LLAMA_ARM"
+    },
+    {
+      "type": "FILE",
+      "label": "文件",
+      "description": "脚本、源代码文件、配置文件、文档等，如 compile-final-fix.sh、perplexity.cpp"
+    },
+    {
+      "type": "CHANNEL",
+      "label": "通信渠道",
+      "description": "消息平台、集成渠道等，如 Telegram、Discord、飞书/Lark、WhatsApp"
+    },
+    {
+      "type": "FORMAT",
+      "label": "数据格式",
+      "description": "文件格式、模型格式、协议等，如 GGUF、ONNX、RKNN、JSON、Cypher"
+    }
+  ],
+  "relations": [
+    {
+      "type": "RUNS_ON",
+      "label": "运行于",
+      "valid_subject": ["SOFTWARE", "MODEL"],
+      "valid_object": ["HARDWARE"]
+    },
+    {
+      "type": "DEVELOPED_BY",
+      "label": "开发于",
+      "valid_subject": ["SOFTWARE", "MODEL", "CONCEPT"],
+      "valid_object": ["ORGANIZATION"]
+    },
+    {
+      "type": "DEPENDS_ON",
+      "label": "依赖",
+      "valid_subject": ["SOFTWARE", "MODEL", "SOLUTION"],
+      "valid_object": ["SOFTWARE", "CONCEPT", "FORMAT", "CONFIG"]
+    },
+    {
+      "type": "USES",
+      "label": "使用",
+      "valid_subject": ["SOFTWARE", "SOLUTION"],
+      "valid_object": ["MODEL", "CONFIG", "FORMAT", "CHANNEL"]
+    },
+    {
+      "type": "SOLVES",
+      "label": "解决",
+      "valid_subject": ["SOLUTION", "FILE"],
+      "valid_object": ["PROBLEM"]
+    },
+    {
+      "type": "CAUSES",
+      "label": "导致",
+      "valid_subject": ["CONFIG", "SOFTWARE", "HARDWARE"],
+      "valid_object": ["PROBLEM"]
+    },
+    {
+      "type": "CONFIGURES",
+      "label": "配置",
+      "valid_subject": ["FILE", "SOLUTION"],
+      "valid_object": ["CONFIG", "SOFTWARE", "HARDWARE"]
+    },
+    {
+      "type": "SUPPORTS",
+      "label": "支持",
+      "valid_subject": ["SOFTWARE", "HARDWARE"],
+      "valid_object": ["FORMAT", "MODEL", "CHANNEL"]
+    },
+    {
+      "type": "PART_OF",
+      "label": "属于",
+      "valid_subject": ["CONCEPT", "SOFTWARE", "CONFIG", "FILE"],
+      "valid_object": ["CONCEPT", "SOFTWARE"]
+    },
+    {
+      "type": "OPTIMIZES",
+      "label": "优化",
+      "valid_subject": ["CONFIG", "SOLUTION", "SOFTWARE"],
+      "valid_object": ["HARDWARE", "SOFTWARE", "MODEL"]
+    },
+    {
+      "type": "INSTALLED_ON",
+      "label": "安装于",
+      "valid_subject": ["SOFTWARE", "CHANNEL"],
+      "valid_object": ["HARDWARE", "CONCEPT"]
+    },
+    {
+      "type": "RELATED_TO",
+      "label": "相关",
+      "valid_subject": null,
+      "valid_object": null
+    }
+  ]
+}
