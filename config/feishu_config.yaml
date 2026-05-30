@@ -1,0 +1,6 @@
+feishu:
+  app_id: "YOUR_APP_ID"
+  app_secret: "YOUR_APP_SECRET"
+  # space_id is the ID of the wiki space you want to sync
+  # You can find it in the URL: https://your-company.feishu.cn/wiki/space/YOUR_SPACE_ID
+  space_id: "YOUR_WIKI_SPACE_ID"

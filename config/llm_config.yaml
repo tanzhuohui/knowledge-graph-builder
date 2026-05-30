@@ -1,0 +1,12 @@
+llm:
+  provider: "lmstudio"
+  model: "qwen3.7-max"
+  base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+  api_key: "YOUR_API_KEY"
+  temperature: 0
+  timeout: 600
+
+extraction:
+  confidence_threshold: 0.7
+  max_retries: 3
+  batch_size: 10

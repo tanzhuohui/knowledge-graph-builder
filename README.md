@@ -1,5 +1,8 @@
 # LLM Knowledge Graph Builder
 
+# Preface
+The documents in the project are mostly written in Chinese. I think it should not be a problem for programmers in an Era of AI. You can easily translate them into whatever languages at will.
+
 > 项目版本: v1.4.1 | 最后更新: 2026-05-26
 
 基于大语言模型的知识图谱构建工具。从文档中自动抽取实体和关系，构建结构化知识图谱，并自动编译为可读的 Markdown Wiki。支持**增量更新**和**双向同步**（Obsidian ↔ Graph）。
@@ -15,6 +18,7 @@ pip install -r requirements.txt
 ### 2. 配置 LLM
 
 编辑 `config/llm_config.yaml`，设置你的 LLM 连接信息：
+【注】当前版本中provider的名字是写死在python代码中的，所以请暂时不要修改。如果非常介意，请自行修改代码，这对于AI辅助编程并不复杂。写死原因是我还用qwen3.5，但不想打开think模式，手动修改了。
 
 ```yaml
 llm:

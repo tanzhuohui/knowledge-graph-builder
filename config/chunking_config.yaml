@@ -1,0 +1,5 @@
+chunking:
+  strategy: "fixed"
+  chunk_size: 1500
+  overlap: 250
+  separator: "\n\n"
