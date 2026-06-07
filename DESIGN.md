@@ -99,7 +99,7 @@ knowledge-graph-builder/
 │   └── incremental_tracker.py   # [NEW] 增量更新追踪器
 │
 ├── data/
-│   ├── raw/                     # 原始文档 (.md / .txt / .csv / feishu_images)
+│   ├── raw/                     # 原始文档 (.md / .txt / .csv / .docx / .xlsx / .pptx / feishu_images)
 │   ├── chunks/                  # 分块后的文本
 │   ├── triples/                 # 抽取的三元组 (JSON)
 │   │   └── incremental_state.json  # [NEW] 增量状态快照
@@ -129,13 +129,16 @@ knowledge-graph-builder/
 - **固定长度分块**：按段落聚合，控制 chunk_size (默认 1500 词)
 - **滑动窗口分块**：保留 overlap (默认 250 词)，避免切断语义
 - **CSV 分块**：按行分块，每行转为 `行 N: 列名=值, ...` 格式
+- **Office 分块**：`.docx` 按段落、`.xlsx` 按行（含 Sheet 名）、`.pptx` 按幻灯片
+- **图片分块**：每张图片为一个 chunk，携带 `image_path` 字段供视觉模型处理
 - 输出格式：`{"id", "source", "index", "text", "word_count"}`
-- 支持文件类型：`.md`, `.txt`, `.csv`
+- 支持文件类型：`.md`, `.txt`, `.csv`, `.docx`, `.xlsx`, `.pptx`, 图片 (.png/.jpg/.jpeg/.webp/.bmp/.gif)
 
 #### 2.2.2 实体关系抽取 (`extractor.py`)
 
 - 支持 **LMStudio** 和 **Ollama** 两种本地 LLM provider
 - 使用结构化 Prompt 引导 LLM 输出 JSON 数组
+- **视觉模型支持**：通过 `config/llm_config.yaml` 中的 `vision_model` 字段配置（如 `qwen-vl-max`），自动对图片 chunk 调用多模态 API（base64 编码 + OpenAI 兼容格式 / Ollama images 字段）
 - 输出格式：`{"subject", "subject_type", "relation", "object", "object_type", "confidence", "source_text"}`
 - 内置重试机制 (exponential backoff) 和置信度过滤
 
@@ -340,7 +343,7 @@ extraction:
 
 #### 准备数据
 
-将原始文档放入 `data/raw/` 目录（支持 `.md` 和 `.txt`）：
+将原始文档放入 `data/raw/` 目录（支持 `.md`, `.txt`, `.csv`, `.docx`, `.xlsx`, `.pptx` 及图片文件）：
 
 ```bash
 cp ~/my-research-paper.md data/raw/
@@ -597,14 +600,12 @@ python -m pytest tests/ -v
 ### 6.2 改进方向
 
 - [ ] **异步批量**：使用 LLM batch API 并行生成 Wiki 页面
-- [ ] **RAG 混合层**：对超出 context window 的文档引入向量检索作为补充
 - [x] **RAG 混合层**：对超出 context window 的文档引入向量检索作为补充（TF-IDF / API Embedding 双后端）
 - [x] **Web UI**：`scripts/serve_webui.py` — Flask + D3.js 轻量级界面，支持浏览、搜索、编辑、图可视化、双向同步
-- [ ] **多模态增强**：集成视觉模型解析图片中的图表与手写笔记
-- [ ] **多模态增强**：集成视觉模型解析图片中的图表与手写笔记
+- [x] **多模态增强**：集成视觉模型解析图片中的图表与手写笔记（`src/chunker.py` 图片分块 + `src/extractor.py` 视觉 LLM 调用）
 - [ ] **自然语言 Wiki 编辑**：支持用户在 Wiki 中用自然语言描述变更，自动解析为图谱操作
 
 ---
 
-*文档版本: v1.4.1*
-*最后更新: 2026-05-26*
+*文档版本: v1.5.0*
+*最后更新: 2026-06-06*

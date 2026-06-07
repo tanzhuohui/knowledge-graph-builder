@@ -1,7 +1,6 @@
 llm:
   provider: "lmstudio"
   model: "qwen3.7-max"
-  vision_model: "qwen-vl-max"
   base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
   api_key: "YOUR_API_KEY"
   temperature: 0

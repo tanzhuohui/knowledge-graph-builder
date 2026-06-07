@@ -30,8 +30,7 @@ from src.vector_store import VectorStore
 def _chunk_suffix(filepath):
     """返回 chunk 文件后缀"""
     base = os.path.basename(filepath)
-    for ext in (".md", ".txt", ".csv", ".docx", ".xlsx", ".pptx",
-                ".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif"):
+    for ext in (".md", ".txt", ".csv"):
         if base.endswith(ext):
             return base[: -len(ext)] + "_chunks.json"
     return base + "_chunks.json"
@@ -148,20 +147,11 @@ def main():
     md_files = glob.glob(os.path.join(raw_dir, "**/*.md"), recursive=True)
     txt_files = glob.glob(os.path.join(raw_dir, "**/*.txt"), recursive=True)
     csv_files = glob.glob(os.path.join(raw_dir, "**/*.csv"), recursive=True)
-    docx_files = glob.glob(os.path.join(raw_dir, "**/*.docx"), recursive=True)
-    xlsx_files = glob.glob(os.path.join(raw_dir, "**/*.xlsx"), recursive=True)
-    pptx_files = glob.glob(os.path.join(raw_dir, "**/*.pptx"), recursive=True)
-    image_files = glob.glob(os.path.join(raw_dir, "**/*.png"), recursive=True) \
-                + glob.glob(os.path.join(raw_dir, "**/*.jpg"), recursive=True) \
-                + glob.glob(os.path.join(raw_dir, "**/*.jpeg"), recursive=True) \
-                + glob.glob(os.path.join(raw_dir, "**/*.webp"), recursive=True) \
-                + glob.glob(os.path.join(raw_dir, "**/*.bmp"), recursive=True) \
-                + glob.glob(os.path.join(raw_dir, "**/*.gif"), recursive=True)
-    all_files = md_files + txt_files + csv_files + docx_files + xlsx_files + pptx_files + image_files
+    all_files = md_files + txt_files + csv_files
 
     if not all_files:
         print("  No documents found in data/raw/")
-        print("  Place .md, .txt, .csv, .docx, .xlsx, .pptx or image files there and run again.")
+        print("  Place .md or .txt files there and run again.")
         return
 
     # ---- 增量判断 ----
@@ -278,8 +268,10 @@ def main():
                     if related_contexts:
                         print(f"    → RAG: {len(related_contexts)} similar chunk(s)")
                 try:
-                    triples = extractor.extract(chunk["text"], chunk["id"], related_contexts,
-                                               image_path=chunk.get("image_path"))
+                    triples = extractor.extract(chunk["text"], chunk["id"], related_contexts)
+                    for t in triples:
+                        t["_idx"] = base_idx + len(new_triples)
+                    new_triples.extend(triples)
                 except Exception as e:
                     print(f"  ERROR on chunk {chunk['id']}: {e}")
 
@@ -298,8 +290,7 @@ def main():
                 if related_contexts:
                     print(f"    → RAG: {len(related_contexts)} similar chunk(s)")
             try:
-                triples = extractor.extract(chunk["text"], chunk["id"], related_contexts,
-                                           image_path=chunk.get("image_path"))
+                triples = extractor.extract(chunk["text"], chunk["id"], related_contexts)
                 all_triples.extend(triples)
             except Exception as e:
                 print(f"  ERROR on chunk {chunk['id']}: {e}")

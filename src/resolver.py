@@ -121,7 +121,7 @@ class EntityResolver:
             f"{base_url}/chat/completions",
             headers=headers,
             json={"model": model, "messages": [{"role": "user", "content": prompt}], "temperature": 0},
-            timeout=60,
+            timeout=15,
         )
         result = resp.json()["choices"][0]["message"]["content"].strip().strip('"')
         if result in existing_names:
@@ -134,7 +134,7 @@ class EntityResolver:
         resp = requests.post(
             f"{base_url}/api/generate",
             json={"model": model, "prompt": prompt, "stream": False},
-            timeout=60,
+            timeout=15,
         )
         result = resp.json().get("response", "").strip().strip('"')
         if result in existing_names:

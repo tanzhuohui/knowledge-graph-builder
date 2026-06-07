@@ -5,6 +5,8 @@ import csv
 
 
 class DocumentChunker:
+    IMAGE_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.webp', '.bmp', '.gif'}
+
     def __init__(self, config_path=None):
         self.config = self._load_config(config_path)
 
@@ -18,10 +20,18 @@ class DocumentChunker:
             return yaml.safe_load(f)["chunking"]
 
     def chunk_file(self, filepath):
-        """根据文件类型分块，支持 md/txt/csv"""
+        """根据文件类型分块，支持 md/txt/csv/docx/xlsx/pptx/图片"""
         ext = os.path.splitext(filepath)[1].lower()
         if ext == '.csv':
             return self.chunk_csv(filepath)
+        elif ext == '.docx':
+            return self.chunk_docx(filepath)
+        elif ext == '.xlsx':
+            return self.chunk_xlsx(filepath)
+        elif ext == '.pptx':
+            return self.chunk_pptx(filepath)
+        elif ext in self.IMAGE_EXTENSIONS:
+            return self.chunk_image(filepath)
         else:
             with open(filepath, "r", encoding="utf-8") as f:
                 text = f.read()
@@ -56,6 +66,88 @@ class DocumentChunker:
         except Exception as e:
             print(f"  CSV 解析错误 {filepath}: {e}")
         return chunks
+
+    def chunk_docx(self, filepath):
+        """将 .docx 文件按段落分块"""
+        from docx import Document
+        source = os.path.basename(filepath)
+        doc = Document(filepath)
+        paragraphs = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
+        text = "\n\n".join(paragraphs)
+        return self.chunk_text(text, source)
+
+    def chunk_xlsx(self, filepath):
+        """将 .xlsx 文件每行转为一个文本块"""
+        from openpyxl import load_workbook
+        source = os.path.basename(filepath)
+        wb = load_workbook(filepath, read_only=True, data_only=True)
+        chunks = []
+        for ws in wb.worksheets:
+            sheet_name = ws.title
+            rows = list(ws.iter_rows(values_only=True))
+            if not rows:
+                continue
+            headers = [str(h) if h is not None else "" for h in rows[0]]
+            for i, row in enumerate(rows[1:], start=2):
+                parts = [f"Sheet={sheet_name}, 行 {i}:"]
+                for h, val in zip(headers, row):
+                    if val is not None:
+                        parts.append(f"{h}={val}")
+                text = ", ".join(parts)
+                if text.strip():
+                    chunks.append({
+                        "id": f"{source}_{sheet_name}_row_{i}",
+                        "source": source,
+                        "index": len(chunks),
+                        "text": text,
+                        "word_count": len(text.split()),
+                    })
+        return chunks
+
+    def chunk_pptx(self, filepath):
+        """将 .pptx 文件按幻灯片分块，每页为一个 chunk"""
+        from pptx import Presentation
+        source = os.path.basename(filepath)
+        prs = Presentation(filepath)
+        chunks = []
+        for i, slide in enumerate(prs.slides, start=1):
+            texts = []
+            for shape in slide.shapes:
+                if shape.has_text_frame:
+                    for para in shape.text_frame.paragraphs:
+                        t = para.text.strip()
+                        if t:
+                            texts.append(t)
+            if texts:
+                text = "\n".join(texts)
+                chunks.append({
+                    "id": f"{source}_slide_{i}",
+                    "source": source,
+                    "index": i - 1,
+                    "text": text,
+                    "word_count": len(text.split()),
+                })
+        if not chunks:
+            chunks.append({
+                "id": f"{source}_empty",
+                "source": source,
+                "index": 0,
+                "text": "",
+                "word_count": 0,
+            })
+        return chunks
+
+    def chunk_image(self, filepath):
+        """将图片文件转为单 chunk，携带 image_path 供视觉模型处理"""
+        source = os.path.basename(filepath)
+        return [{
+            "id": f"{source}_image_0",
+            "source": source,
+            "index": 0,
+            "text": f"[Image file: {source}]",
+            "word_count": 4,
+            "image_path": os.path.abspath(filepath),
+        }]
 
     def chunk_text(self, text, source="unknown"):
         strategy = self.config.get("strategy", "fixed")

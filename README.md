@@ -1,9 +1,6 @@
 # LLM Knowledge Graph Builder
 
-# Preface
-The documents in the project are mostly written in Chinese. I think it should not be a problem for programmers in an Era of AI. You can easily translate them into whatever languages at will.
-
-> 项目版本: v1.4.1 | 最后更新: 2026-05-26
+> 项目版本: v1.5.0 | 最后更新: 2026-06-06
 
 基于大语言模型的知识图谱构建工具。从文档中自动抽取实体和关系，构建结构化知识图谱，并自动编译为可读的 Markdown Wiki。支持**增量更新**和**双向同步**（Obsidian ↔ Graph）。
 
@@ -18,7 +15,6 @@ pip install -r requirements.txt
 ### 2. 配置 LLM
 
 编辑 `config/llm_config.yaml`，设置你的 LLM 连接信息：
-【注】当前版本中provider的名字是写死在python代码中的，所以请暂时不要修改。如果非常介意，请自行修改代码，这对于AI辅助编程并不复杂。写死原因是我还用qwen3.5，但不想打开think模式，手动修改了。
 
 ```yaml
 llm:
@@ -75,7 +71,7 @@ knowledge-graph-builder/
 │   ├── wiki_sync.py             # [NEW] 双向同步 (Wiki → Graph)
 │   └── incremental_tracker.py   # [NEW] 增量更新追踪器
 ├── data/
-│   ├── raw/                     # 放入原始文档 (.md / .txt / .csv)
+│   ├── raw/                     # 放入原始文档 (.md / .txt / .csv / .docx / .xlsx / .pptx)
 │   ├── chunks/                  # 分块输出
 │   ├── triples/                 # 抽取的三元组
 │   │   └── incremental_state.json  # 增量状态快照
@@ -244,6 +240,44 @@ python scripts/sync_wiki_to_graph.py --dry-run
 cp your_data.csv data/raw/
 
 # 2. 运行完整流程
+python scripts/run_extraction.py
+```
+
+## Office 文档支持
+
+本项目支持直接处理 Microsoft Office 格式文档：
+
+- **Word (.docx)**: 按段落提取文本，自动分块
+- **Excel (.xlsx)**: 每行转为一个文本块，格式为 `Sheet=名称, 行 N: 列名=值, ...`
+- **PowerPoint (.pptx)**: 每张幻灯片为一个 chunk
+
+### 使用方法
+
+```bash
+# 放入 raw 目录即可自动识别
+cp report.docx data/raw/
+cp data.xlsx  data/raw/
+cp slides.pptx data/raw/
+
+python scripts/run_extraction.py
+```
+
+## 多模态支持 (图片/截图/图表)
+
+本项目支持直接处理图片文件，利用视觉语言模型（如 Qwen-VL）自动解析截图、架构图和图表中的实体和关系：
+
+- **支持的格式**: `.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`, `.gif`
+- **每张图片** 为一个独立 chunk，传递给视觉模型分析
+- **视觉模型**: 通过 `llm_config.yaml` 中的 `vision_model` 字段配置（如 `qwen-vl-max`）
+- **RAG 增强**: 图片 chunk 同样支持向量检索上下文补充
+
+### 使用方法
+
+```bash
+# 将图片放入 data/raw/ 目录
+cp architecture_diagram.png data/raw/
+cp screenshot.jpg data/raw/
+
 python scripts/run_extraction.py
 ```
 

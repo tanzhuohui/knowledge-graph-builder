@@ -1,7 +1,7 @@
 # Knowledge Graph Builder - 开发进度记录
 
-> 最后更新: 2026-05-26
-> 当前版本: v1.4.1
+> 最后更新: 2026-06-06
+> 当前版本: v1.5.0
 
 ---
 
@@ -24,6 +24,10 @@
 - [x] **增量更新**: 基于 SHA256 快照，仅处理新增/修改文档 (`src/incremental_tracker.py`)
 - [x] **双向同步**: Wiki Markdown 编辑反馈回图谱 (`src/wiki_sync.py`, `scripts/sync_wiki_to_graph.py`)
 
+### 1.5 新增功能 (v1.5.0)
+- [x] **Office 文档支持**: 自动识别 `.docx`/`.xlsx`/`.pptx`，分别按段落、行、幻灯片分块提取文本 (`src/chunker.py`, `scripts/run_extraction.py`)
+- [x] **多模态支持**: 支持 `.png`/`.jpg`/`.webp`/`.bmp`/`.gif` 图片文件，通过视觉模型 (Qwen-VL) 自动解析截图和架构图中的实体与关系 (`src/chunker.py`, `src/extractor.py`, `config/llm_config.yaml`)
+
 ### 1.4 插件与扩展
 - [x] **飞书同步**: 自动拉取飞书知识库并转 Markdown (`scripts/sync_feishu.py`)
 - [x] **独立推理**: 支持对已有图谱运行分析脚本 (`scripts/run_inference.py`)
@@ -35,10 +39,11 @@
 
 ## 2. 配置与环境
 
-- **LLM 后端**: LMStudio
-- **当前模型**: `gemma-4-e4b-it`
-- **API 地址**: `http://192.168.3.70:1234/v1`
-- **主要依赖**: `networkx`, `pyyaml`, `requests`, `python-Levenshtein`, `lxml`
+- **LLM 后端**: LMStudio / DashScope (OpenAI 兼容)
+- **文本模型**: `qwen3.7-max`
+- **视觉模型**: `qwen-vl-max` (通过 `vision_model` 配置)
+- **API 地址**: `https://dashscope.aliyuncs.com/compatible-mode/v1`
+- **主要依赖**: `networkx`, `pyyaml`, `requests`, `python-Levenshtein`, `lxml`, `python-docx`, `openpyxl`, `python-pptx`
 
 ---
 
@@ -58,7 +63,7 @@
 ### 4.1 高优先级
 - [x] **增量更新**: 已实现。默认仅处理新增/修改文档，复用已有三元组。支持 `--full` 强制全量重建。详见 `src/incremental_tracker.py`。
 - [x] **双向同步**: 已实现 Wiki → Graph 反馈。用户在 Obsidian 中编辑实体页面（增删关系、修改置信度/类型），同步后自动更新图谱。详见 `src/wiki_sync.py` 和 `scripts/sync_wiki_to_graph.py`。
-- [ ] **多模态支持**: 引入视觉模型 (如 Qwen-VL) 以解析文档截图和架构图。
+- [x] **多模态支持**: 引入视觉模型 (如 Qwen-VL) 以解析文档截图和架构图。详见 `src/chunker.py` (图片分块), `src/extractor.py` (视觉 LLM 调用), `config/llm_config.yaml` (`vision_model` 配置)。
 
 ### 4.2 优化项
 - [ ] **性能提升**: Wiki 编译阶段是串行的，可改为并发请求 LLM。
